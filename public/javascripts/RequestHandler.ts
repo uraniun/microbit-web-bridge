@@ -21,7 +21,7 @@ export class RequestHandler {
      */
     public async handleRequest(serialPacket: SerialPacket): Promise<SerialPacket> {
         // if HELLO packet
-        if (serialPacket.request_type & RequestType.REQUEST_TYPE_HELLO) {
+        if (serialPacket.request_type === RequestType.REQUEST_TYPE_HELLO) {
             return this.handleHelloPacket(serialPacket);
 
             // if a REST request
@@ -552,8 +552,12 @@ export class RequestHandler {
 
             // if the hub has already been authenticated with a hello packet, return error
             if (this.hub_variables["authenticated"]) {
-                reject("ALREADY AUTHENTICATED");
-                return;
+                // set request type to hello and status to OK
+                responsePacket.setRequestBit(RequestType.REQUEST_TYPE_HELLO);
+                responsePacket.setRequestBit(RequestStatus.REQUEST_STATUS_OK);
+                responsePacket.append(0); // append a 0 for OK
+
+                resolve(responsePacket); // resolve the response packet to be sent to the bridge micro:bit
             }
 
             // if the school ID is blank
